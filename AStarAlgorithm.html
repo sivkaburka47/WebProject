@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AStarAlrogorithm</title>
+
+    <script src="libs/gsap/gsap.min.js" defer></script>
+    <script src="libs/gsap/ScrollSmoother.min.js" defer></script>
+    <script src="libs/gsap/ScrollTrigger.min.js" defer></script>
+
+    <link rel="stylesheet" href="css/main.css">
+    <script src="js/app.js" defer></script>
+    <script src="js/AStarAlgorithmJS.js" defer></script>
+
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="aura"></div>
+
+<div class="wrapper">
+    <div class="content">
+        <header class="hero-section">
+            <div class="container">
+                <div data-speed=".75" class="main-header">
+                    <h1 class="main-title">A* algorithm</h1>
+                </div>
+            </div>
+        </header>
+        <div class="container__A*">
+            <canvas id="map" class="map">
+
+            </canvas>
+            <div class="menu">
+                <div class="menu__block">
+                    <p class="text-block__p">Enter the size of the map:</p>
+                    <input class="input_size_map"  type="number" >
+                </div>
+                <div class="menu__block">
+                    <button id="createMap" class="complete_btn">
+                        <p  class="text-block__p">Create map</p>
+                    </button>
+                    <button id="findPath" class="complete_btn">
+                        <p  class="text-block__p">Find path</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+</div>
+</body>
+</html>

@@ -85,6 +85,10 @@ body {
     margin-top: 60vh;
     margin-bottom: 5vh;
 }
+.arrow__left {
+
+
+}
 
 .text-block__h {
     font-size: 2rem;
@@ -143,8 +147,55 @@ body {
     transform: scale(1.3);
 }
 
+.container__A\*{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.map {
+
+    background-color: slategray;
+    height: 90vh;
+    width: 90vh;
+    border-radius: 10px 0 0 10px;
+}
+
+.menu{
+    height: 90vh;
+    width: 40vh;
+    background-color: gray;
+    border-radius: 0 10px 10px 0;
+}
+
+.menu__block{
+    margin: 0 auto;
+    margin-top: 5vh;
+    height: 20vh;
+    width:25vh;
+}
+
+.block__map{
+    background-color: aliceblue;
+    width: 10vh;
+    height: 10vh;
+    margin: 1vh 1vh;
+
+}
 
 
+.input_size_map{
+    background-color: slategray;
+    width: 15vh;
+    height: 5vh;
+    margin: 0 auto;
 
+}
 
-
+.complete_btn{
+    width: 15vh;
+    height: 5vh;
+    margin: 0 auto;
+    border-radius: 5px;
+    border-style: solid;
+}
