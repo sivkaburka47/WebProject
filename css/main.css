@@ -151,6 +151,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-bottom: 10vh;
 }
 
 .map {
@@ -166,13 +167,17 @@ body {
     width: 40vh;
     background-color: gray;
     border-radius: 0 10px 10px 0;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .menu__block{
-    margin: 0 auto;
-    margin-top: 5vh;
     height: 20vh;
     width:25vh;
+
+
+
 }
 
 .block__map{
@@ -181,21 +186,33 @@ body {
     height: 10vh;
     margin: 1vh 1vh;
 
+
 }
 
 
 .input_size_map{
     background-color: slategray;
-    width: 15vh;
+    width: 30vh;
     height: 5vh;
-    margin: 0 auto;
+    border-radius: 10px;
+    outline: none;
+    border: none;
+    border: solid 1px dimgrey;
+
+}
+
+.input_size_map:active, :hover, :focus {
+    outline: 0;
+    outline-offset: 0;
 
 }
 
 .complete_btn{
-    width: 15vh;
-    height: 5vh;
+    width: 30vh;
+    height: 7vh;
     margin: 0 auto;
     border-radius: 5px;
     border-style: solid;
 }
+
+
