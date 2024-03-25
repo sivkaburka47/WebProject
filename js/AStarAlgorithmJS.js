@@ -4,12 +4,94 @@ document.addEventListener("DOMContentLoaded", function() {
         drawMap();
         highlightedSquares = [];
     });
+    document.getElementById("findPath").addEventListener("click", findPath);
     canvas.addEventListener("click", handleClick);
     canvas.addEventListener("dblclick", handleDoubleClick);
 });
 
 let squares = [];
 let highlightedSquares = [];
+
+function distance(a, b) {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+function reconstructPath(current) {
+    let path = [];
+    while (current) {
+        path.unshift(current);
+        current = current.previous;
+    }
+    return path;
+}
+
+function getNeighbors(square, squares, countSquares) {
+    const neighbors = [];
+    const index = squares.indexOf(square);
+    const row = Math.floor(index / countSquares);
+    const col = index % countSquares;
+
+    if (row > 0) neighbors.push(squares[index - countSquares]); // верхний сосед
+    if (row < countSquares - 1) neighbors.push(squares[index + countSquares]); // нижний сосед
+    if (col > 0) neighbors.push(squares[index - 1]); // левый сосед
+    if (col < countSquares - 1) neighbors.push(squares[index + 1]); // правый сосед
+
+    return neighbors;
+}
+
+function findPath() {
+    if (highlightedSquares.length < 2) return;
+
+    const start = highlightedSquares[0];
+    const end = highlightedSquares[1];
+    const countSquares = Math.sqrt(squares.length);
+
+    let openSet = [start];
+    let closedSet = [];
+    start.g = 0;
+    start.h = distance(start, end);
+    start.f = start.h;
+
+    while (openSet.length > 0) {
+        let current = openSet.reduce((a, b) => a.f < b.f ? a : b);
+
+        if (current === end) {
+            let path = reconstructPath(current);
+            path.forEach(square => square.path = true);
+            drawSquares();
+            console.log("Path found");
+            return;
+        }
+
+        openSet = openSet.filter(square => square !== current);
+        closedSet.push(current);
+
+        const neighbors = getNeighbors(current, squares, countSquares);
+        for (let i = 0; i < neighbors.length; i++) {
+            const neighbor = neighbors[i];
+
+            if (closedSet.includes(neighbor) || neighbor.clicked) continue;
+
+            const tempG = current.g + distance(current, neighbor);
+
+            if (!openSet.includes(neighbor)) {
+                openSet.push(neighbor);
+            } else if (tempG >= neighbor.g) {
+                continue;
+            }
+
+            neighbor.g = tempG;
+            neighbor.h = distance(neighbor, end);
+            neighbor.f = neighbor.g + neighbor.h;
+            neighbor.previous = current;
+        }
+    }
+
+    console.log("No path found. Please ensure that there is a clear path between the start and end squares.");
+}
+
 
 function drawMap() {
     const canvas = document.getElementById("map");
@@ -94,12 +176,14 @@ function drawSquares() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     squares.forEach(function(square) {
-        if (square.doubleClicked) {
-            ctx.fillStyle = 'blue';
+        if (square.path) {
+            ctx.fillStyle = 'rgb(171, 237, 198)';
+        } else if (square.doubleClicked) {
+            ctx.fillStyle = 'rgb(185, 255, 183)';
         } else if (square.clicked) {
-            ctx.fillStyle = 'red';
+            ctx.fillStyle = 'rgb(107, 113, 126)';
         } else {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillStyle = 'rgb(239, 170, 196)';
         }
         ctx.fillRect(square.x, square.y, square.size, square.size);
     });
