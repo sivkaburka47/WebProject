@@ -1,16 +1,40 @@
 document.addEventListener("DOMContentLoaded", function() {
     const canvas = document.getElementById("map");
-    document.getElementById("createMap").addEventListener("click", function() {
+    document.getElementById("resetMap").addEventListener("click", function() {
         drawMap();
         highlightedSquares = [];
+        pathFound = false;
     });
     document.getElementById("findPath").addEventListener("click", findPath);
     canvas.addEventListener("click", handleClick);
     canvas.addEventListener("dblclick", handleDoubleClick);
+
+});
+
+var rangeInput = document.querySelector('.input_size_map');
+var numberInput = document.querySelector('.input_size_map_num');
+
+rangeInput.addEventListener('input', function() {
+    numberInput.value = rangeInput.value;
+    drawMap();
+    highlightedSquares = [];
+});
+
+numberInput.addEventListener('blur', function() {
+    let val = parseInt(numberInput.value, 10);
+    if (val < 5) {
+        numberInput.value = 5;
+    } else if (val > 50) {
+        numberInput.value = 50;
+    }
+    rangeInput.value = numberInput.value;
+    drawMap();
+    highlightedSquares = [];
 });
 
 let squares = [];
 let highlightedSquares = [];
+let pathFound = false;
 
 function distance(a, b) {
     const dx = a.x - b.x;
@@ -33,16 +57,16 @@ function getNeighbors(square, squares, countSquares) {
     const row = Math.floor(index / countSquares);
     const col = index % countSquares;
 
-    if (row > 0) neighbors.push(squares[index - countSquares]); // верхний сосед
-    if (row < countSquares - 1) neighbors.push(squares[index + countSquares]); // нижний сосед
-    if (col > 0) neighbors.push(squares[index - 1]); // левый сосед
-    if (col < countSquares - 1) neighbors.push(squares[index + 1]); // правый сосед
+    if (row > 0) neighbors.push(squares[index - countSquares]);
+    if (row < countSquares - 1) neighbors.push(squares[index + countSquares]);
+    if (col > 0) neighbors.push(squares[index - 1]);
+    if (col < countSquares - 1) neighbors.push(squares[index + 1]);
 
     return neighbors;
 }
 
 function findPath() {
-    if (highlightedSquares.length < 2) return;
+    if (highlightedSquares.length < 2 || pathFound) return;
 
     const start = highlightedSquares[0];
     const end = highlightedSquares[1];
@@ -59,9 +83,8 @@ function findPath() {
 
         if (current === end) {
             let path = reconstructPath(current);
-            path.forEach(square => square.path = true);
-            drawSquares();
-            console.log("Path found");
+            drawPathStepByStep(path);
+            pathFound = true;
             return;
         }
 
@@ -88,9 +111,17 @@ function findPath() {
             neighbor.previous = current;
         }
     }
-
-    console.log("No path found. Please ensure that there is a clear path between the start and end squares.");
 }
+
+function drawPathStepByStep(path) {
+    path.forEach((square, index) => {
+        setTimeout(() => {
+            square.path = true;
+            drawSquares();
+        }, index * 100);
+    });
+}
+
 
 
 function drawMap() {
@@ -125,6 +156,8 @@ function drawMap() {
 }
 
 function handleClick(event) {
+    if (pathFound) return;
+
     const square = getSquare(event);
     if (!square) return;
 
@@ -147,6 +180,8 @@ function handleClick(event) {
 }
 
 function handleDoubleClick(event) {
+    if (pathFound) return;
+
     const square = getSquare(event);
     if (!square) return;
 
@@ -177,13 +212,13 @@ function drawSquares() {
 
     squares.forEach(function(square) {
         if (square.path) {
-            ctx.fillStyle = 'rgb(171, 237, 198)';
+            ctx.fillStyle = 'rgb(178, 201, 171)';
         } else if (square.doubleClicked) {
-            ctx.fillStyle = 'rgb(185, 255, 183)';
+            ctx.fillStyle = 'rgb(231, 187, 65)';
         } else if (square.clicked) {
             ctx.fillStyle = 'rgb(107, 113, 126)';
         } else {
-            ctx.fillStyle = 'rgb(239, 170, 196)';
+            ctx.fillStyle = 'rgb(232, 221, 181)'
         }
         ctx.fillRect(square.x, square.y, square.size, square.size);
     });
@@ -200,3 +235,5 @@ function getSquare(event) {
         mouseY > square.y && mouseY < square.y + square.size
     );
 }
+
+drawMap();

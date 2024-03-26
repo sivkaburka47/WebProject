@@ -28,36 +28,30 @@
             <div class="container">
                 <div class="main-header">
                     <h1 class="main-title">A* algorithm</h1>
-
                 </div>
             </div>
         </header>
         <div class="container__A*">
-            <canvas id="map" class="map">
-
-            </canvas>
+            <div class="block__map">
+                <canvas id="map" class="map"></canvas>
+            </div>
             <div class="menu">
                 <div class="menu__block">
-                    <div>
-                        <input class="input_size_map"  type="number" placeholder="Enter the size of the map:" >
-                    </div>
+                        <h4 >Enter the size of the map:</h4>
+                        <input class="input_size_map"  type="range" min="5" max="50" value="10">
+                        <input class="input_size_map_num" type="number" min="5" max="50" value="10">
                 </div>
                 <div class="menu__block">
-                    <button id="createMap" class="complete_btn">
-                        <h1>Create map</h1>
+                    <button id="resetMap" class="complete_btn">
+                        <h1>Reset map</h1>
                     </button>
-                </div>
-                <div class="menu__block">
-                    <button id="findPath" class="complete_btn">
+                    <button id="findPath"  class="complete_btn">
                         <h1>Find path</h1>
                     </button>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<div class="footer_dock">
-
 </div>
 </body>
 </html>
