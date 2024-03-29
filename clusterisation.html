@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Clusterisation</title>
+
+    <script src="libs/gsap/gsap.min.js" defer></script>
+    <script src="libs/gsap/ScrollSmoother.min.js" defer></script>
+    <script src="libs/gsap/ScrollTrigger.min.js" defer></script>
+
+    <link rel="stylesheet" href="css/main.css">
+    <script src="js/app.js" defer></script>
+    <script src="js\cluster.js" defer></script>
+
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="aura"></div>
+
+<div class="wrapper">
+    <div class="content">
+        <header class="hero-section">
+            <div class="container">
+                <div class="main-header">
+                    <h1 class="main-title">Clustering</h1>
+                </div>
+            </div>
+        </header>
+        <div class="container__A*">
+            <div class="block__map">
+                <canvas id="map" class="map"></canvas>
+            </div>
+            <div class="menu">
+                <div class="menu__block">
+                        <h4 >Enter the size of the map:</h4>
+                        <input class="input_size_map"  type="range" min="5" max="50" value="10">
+                        <input class="input_size_map_num" type="number" min="5" max="50" value="10">
+                </div>
+                <div class="menu__block">
+                    <h4 >Enter the number of clusters</h4>
+                    <input class="input_number_clusters"  type="range" min="1" max="10" value="10">
+                    <input class="input_number_clusters_num" type="number" min="1" max="10" value="10">
+                </div>
+                <div class="menu__block">
+                    <button id="resetMap" class="complete_btn">
+                        <h1>Reset map</h1>
+                    </button>
+                    <button id="findPath"  class="complete_btn">
+                        <h1>Group</h1>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
