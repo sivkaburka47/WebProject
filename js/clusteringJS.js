@@ -22,8 +22,8 @@ numberInput.addEventListener('blur', function() {
     let val = parseInt(numberInput.value, 10);
     if (val < 5) {
         numberInput.value = 5;
-    } else if (val > 50) {
-        numberInput.value = 50;
+    } else if (val > 40) {
+        numberInput.value = 40;
     }
     rangeInput.value = numberInput.value;
     drawMap();
