@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function() {
         dots = [];
         grouped = false;
     });
-    document.getElementById("findPath").addEventListener("click", kmeans);
+    document.getElementById("group").addEventListener("click", kmeans);
     canvas.addEventListener("click", handleClick);
 });
 
@@ -79,9 +79,11 @@ function drawSquares() {
 let dots = []; /* В массиве точек каждому индексу пресущи три значения x, y и whichCluster
 (показывает к какому кластеру относится точка, если ни к какому, то whichCluster = -1)  */
 
-// Количество кластеров !!! НЕ РАБОТАЕТ НУЖНО ИСПРАВИТЬ !!!
-/*var clusterQuantityRangeInput = document.querySelector('.input_number_clusters');
-var clusterQuantityNumberInput = document.querySelector('.input_size_clusters_num');
+// Количество кластеров
+var clusterQuantityRangeInput = document.querySelector('.input_number_clusters');
+var clusterQuantityNumberInput = document.querySelector('.input_number_clusters_num');
+let clusterQuantity;
+let clusterCenters = [];
 
 clusterQuantityRangeInput.addEventListener('input', function() {
     clusterQuantityNumberInput.value = clusterQuantityRangeInput.value;
@@ -89,24 +91,23 @@ clusterQuantityRangeInput.addEventListener('input', function() {
 
 clusterQuantityNumberInput.addEventListener('blur', function() {
     let val = parseInt(clusterQuantityNumberInput.value, 10);
-    if (val < 5) {
+    if (val < 1) {
+        clusterQuantityNumberInput.value = 1;
+    } else if (val > 5) {
         clusterQuantityNumberInput.value = 5;
-    } else if (val > 50) {
-        clusterQuantityNumberInput.value = 50;
     }
     clusterQuantityRangeInput.value = clusterQuantityNumberInput.value;
 });
 
-let clusterQuantity = clusterQuantityRangeInput;*/
-
-let clusterQuantity = 2; // Число кластеров
-
-// Массив центров кластеров, каждому индексу пресущи два значения x и y, заполнен случайными числами от 0 до размера матрицы
-let clusterCenters = [];
-const canvas = document.getElementById("map");
-for (let i = 0; i < clusterQuantity; i++)
-{
-    clusterCenters[i] = { x: Math.floor(Math.random() * canvas.width), y: Math.floor(Math.random() * canvas.height)};
+// Массив центров кластеров, каждому индексу пресущи два значения x и y, заполнен случайными числами
+function centers() {
+    clusterQuantity = parseInt(document.querySelector(".input_number_clusters").value) || 2;
+    const canvas = document.getElementById("map");
+    for (let i = 0; i < clusterQuantity; i++)
+    {
+        //console.log(i);
+        clusterCenters[i] = { x: Math.floor(Math.random() * canvas.width), y: Math.floor(Math.random() * canvas.height)};
+    }
 }
 
 // Нажатие на квадрат
@@ -148,10 +149,10 @@ function findGeometricalCenter(dots, clusterIndex)
 
     for (let i = 0; i < dots.length; i++)
     {
-        if (dots[i].whichCluster == clusterIndex)
+        if (dots[i].whichCluster === clusterIndex)
         {
-            center.x += dots[i].y;
-            center.y += dots[i].x;
+            center.x += dots[i].x;
+            center.y += dots[i].y;
             dotsQuantity++;
         }
     }
@@ -165,12 +166,13 @@ function findGeometricalCenter(dots, clusterIndex)
 // Алгоритм к-средних для разделения на кластеры
 function kmeans()
 {
+    centers();
     for (let i = 0; i < dots.length; i++)
     {
         let minCluster = {clusterIndex: -1, length: Number.MAX_SAFE_INTEGER};
         for (let j = 0; j < clusterQuantity; j++)
         {
-            if (Math.sqrt((clusterCenters[j].x - dots[i].x) ** 2 + (clusterCenters[j].y - dots[i].x) ** 2) < minCluster.length)
+            if (Math.sqrt((clusterCenters[j].x - dots[i].x) ** 2 + (clusterCenters[j].y - dots[i].y) ** 2) < minCluster.length)
             {
                 minCluster.clusterIndex = j;
                 minCluster.length = Math.sqrt((clusterCenters[j].x - dots[i].x) ** 2 + (clusterCenters[j].y - dots[i].y) ** 2);
@@ -183,15 +185,28 @@ function kmeans()
         const canvas = document.getElementById("map");
         const ctx = canvas.getContext("2d");
 
-        // !!! КОГДА БУДЕТ ГОТОВО ИЗМЕНЕНИЕ ЧИСЛА КЛАСТЕРОВ СДЕЛАТЬ ЛИБО МАССИВ ЦВЕТОВ ЛИБО СВИТЧ ДЛЯ КАЖДОГО КЛАСТЕРА !!!
-        if (dots[i].whichCluster === 0)
+        switch (dots[i].whichCluster)
         {
-            ctx.fillStyle = 'rgb(255, 0, 0)';
+            case 0:
+                ctx.fillStyle = 'rgb(153, 0, 0)'; // Красный
+                break;
+            case 1:
+                ctx.fillStyle = 'rgb(0, 0, 153)'; // Синий
+                break;
+            case 2:
+                ctx.fillStyle = 'rgb(0, 109, 91)'; // Зеленый
+                break;
+            case 3:
+                ctx.fillStyle = 'rgb(13, 152, 186)'; // Голубой
+                break;
+            case 4:
+                ctx.fillStyle = 'rgb(136, 78, 160)'; // Фиолетовый
+                break;
+            default:
+                ctx.fillStyle = 'rgb(107, 113, 126)'; // Серый
+                break
         }
-        else
-        {
-            ctx.fillStyle = 'rgb(0, 0, 255)';
-        }
+
         ctx.fillRect(dots[i].x, dots[i].y, squares[0].size, squares[0].size);
 
         clusterCenters[minCluster.clusterIndex] = findGeometricalCenter(dots, minCluster.clusterIndex);
