@@ -171,6 +171,20 @@ body {
     border-radius: 10px 0 0 10px;
     background-color: rgb(98, 147, 140);
     border-radius: 5px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+
+}
+
+
+
+.mapShowDigit {
+    height: 50px;
+    width: 50px;
+    border-radius: 10px 0 0 10px;
+    background-color: rgb(98, 147, 140);
+    border-radius: 5px;
 
 
 }
