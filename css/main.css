@@ -304,4 +304,15 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 
+#pathsHistory {
+    height: 60vh;
+    width: 35vh;
+    overflow-y: scroll;
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin-top: 10px;
+    background-color: rgb(102, 106, 134);
+}
+
+
 

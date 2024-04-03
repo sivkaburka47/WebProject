@@ -36,6 +36,7 @@ let squares = [];
 let highlightedSquares = [];
 let pathFound = false;
 
+//Расстояние между точками пути
 function distance(a, b) {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
