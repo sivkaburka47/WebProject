@@ -92,6 +92,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     }
 
+    let noBetterPathTimer;
+
     function findBestPath() {
         return new Promise(async resolve => {
             let population = initializePopulation(2500);
@@ -108,6 +110,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         bestDistance = scores[i];
                         bestPath = population[i];
                         foundNewBest = true;
+                        clearTimeout(noBetterPathTimer);
+                        noBetterPathTimer = setTimeout(() => {
+                            displayPath(bestPath, 'red');
+                        }, 5000);
                     }
                 }
 
@@ -121,12 +127,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 population = mutate(crossedOver, 0.5);
             }
 
-            setTimeout(() => {
-                displayPath(bestPath, 'red');
-                resolve();
-            }, 1000);
+            clearTimeout(noBetterPathTimer);
+            displayPath(bestPath, 'red');
+            resolve();
         });
     }
+
 
     document.getElementById('findPath').addEventListener('click', async function() {
         if (circles.length > 1) {
@@ -221,5 +227,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         return mutatedPopulation;
     }
+
+    function resetCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        circles = [];
+        edges = [];
+        counter = 1;
+        document.getElementById('pathDistance').innerText = 'Расстояние: 0';
+    }
+
+    document.getElementById('resetMap').addEventListener('click', function() {
+        resetCanvas();
+    });
+
 
 });
