@@ -99,14 +99,13 @@ clusterQuantityNumberInput.addEventListener('blur', function() {
     clusterQuantityRangeInput.value = clusterQuantityNumberInput.value;
 });
 
-// Массив центров кластеров, каждому индексу пресущи два значения x и y, заполнен случайными числами
+// Массив центров кластеров, каждому индексу пресущи три значения x, y (заполнены случайными числами), а также used (использован ли кластер)
 function centers() {
     clusterQuantity = parseInt(document.querySelector(".input_number_clusters").value) || 2;
     const canvas = document.getElementById("map");
     for (let i = 0; i < clusterQuantity; i++)
     {
-        //console.log(i);
-        clusterCenters[i] = { x: Math.floor(Math.random() * canvas.width), y: Math.floor(Math.random() * canvas.height)};
+        clusterCenters[i] = { x: Math.floor(Math.random() * canvas.width), y: Math.floor(Math.random() * canvas.height), used: false};
     }
 }
 
@@ -166,22 +165,88 @@ function findGeometricalCenter(dots, clusterIndex)
 // Алгоритм к-средних для разделения на кластеры
 function kmeans()
 {
-    centers();
+    let dotsPrev = [];
     for (let i = 0; i < dots.length; i++)
     {
-        let minCluster = {clusterIndex: -1, length: Number.MAX_SAFE_INTEGER};
-        for (let j = 0; j < clusterQuantity; j++)
+        dotsPrev.push(dots[i].whichCluster);
+    }
+
+    let clusterCentersPrev = [];
+
+    let iter = 1;
+
+    while (true)
+    {
+        centers();
+
+        if (dots.length < clusterCenters.length)
         {
-            if (Math.sqrt((clusterCenters[j].x - dots[i].x) ** 2 + (clusterCenters[j].y - dots[i].y) ** 2) < minCluster.length)
+            alert("The number of points must be greater than the number of clusters");
+            return;
+        }
+
+        let cnt = 0;
+        for (let i = 0; i < dots.length; i++)
+        {
+            let minCluster = {clusterIndex: -1, length: Number.MAX_SAFE_INTEGER};
+            for (let j = 0; j < clusterQuantity; j++)
             {
-                minCluster.clusterIndex = j;
-                minCluster.length = Math.sqrt((clusterCenters[j].x - dots[i].x) ** 2 + (clusterCenters[j].y - dots[i].y) ** 2);
+                if (Math.sqrt((clusterCenters[j].x - dots[i].x) ** 2 + (clusterCenters[j].y - dots[i].y) ** 2) < minCluster.length)
+                {
+                    minCluster.clusterIndex = j;
+                    minCluster.length = Math.sqrt((clusterCenters[j].x - dots[i].x) ** 2 + (clusterCenters[j].y - dots[i].y) ** 2);
+                }
+            }
+            
+            dots[i].whichCluster = minCluster.clusterIndex;
+            if (dots[i].whichCluster === dotsPrev[i])
+            {
+                cnt++;
+            }
+
+            clusterCenters[minCluster.clusterIndex] = findGeometricalCenter(dots, minCluster.clusterIndex);
+            clusterCenters[minCluster.clusterIndex].used = true;
+        }
+
+        for (let i = 0; i < clusterCenters.length && iter > 1; i++)
+        {
+            if (clusterCenters[i].x === clusterCentersPrev[i].x && clusterCenters[i].y === clusterCentersPrev[i].y && clusterCenters[i].used === true)
+            {
+                cnt++;
             }
         }
 
-        dots[i].whichCluster = minCluster.clusterIndex;
+        if (cnt === dots.length + clusterCenters.length)
+        {
+            console.log(iter);
+            break;
+        }
+        else
+        {
+            dotsPrev = [];
+            for (let i = 0; i < dots.length; i++)
+            {
+                dotsPrev.push(dots[i].whichCluster);
+            }
 
-        // Меняем цвет
+            clusterCentersPrev = [];
+            for (let i = 0; i < clusterCenters.length; i++)
+            {
+                clusterCentersPrev.push({x: clusterCenters[i].x, y: clusterCenters[i].y});
+            }
+        }
+
+        iter++;
+        if (iter > 10000000)
+        {
+            alert("Unable to group");
+            return;
+        }
+    }
+
+    // Меняем цвет
+    for (let i = 0; i < dots.length; i++)
+    {
         const canvas = document.getElementById("map");
         const ctx = canvas.getContext("2d");
 
@@ -208,7 +273,5 @@ function kmeans()
         }
 
         ctx.fillRect(dots[i].x, dots[i].y, squares[0].size, squares[0].size);
-
-        clusterCenters[minCluster.clusterIndex] = findGeometricalCenter(dots, minCluster.clusterIndex);
     }
 }
