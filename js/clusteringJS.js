@@ -6,8 +6,13 @@ document.addEventListener("DOMContentLoaded", function() {
         grouped = false;
     });
     document.getElementById("group").addEventListener("click", kmeans);
-    canvas.addEventListener("click", handleClick);
+    document.addEventListener("click", handleClick);
+    document.addEventListener("mousedown", start);
+    document.addEventListener("mouseup", stop);
 });
+
+drawMap();
+grouped = false;
 
 var rangeInput = document.querySelector('.input_size_map');
 var numberInput = document.querySelector('.input_size_map_num');
@@ -109,19 +114,28 @@ function centers() {
     }
 }
 
-// Нажатие на квадрат
+// Рисование квадратов
+function start(event)
+{
+    document.addEventListener("mousemove", handleClick);
+}
+
+function stop() 
+{
+    document.removeEventListener("mousemove", handleClick);
+}
+
 function handleClick(event) {
     if (grouped) return;
 
     const square = getSquare(event);
     if (!square) return;
 
-    if (++square.clickCount === 2) {
+    if (square.clicked === true && event.type === "click") {
         square.clicked = false;
-        square.clickCount = 0;
         dots = dots.filter(n => n.y !== square.y || n.x !== square.x);
     } else {
-        square.clicked = !square.clicked;
+        square.clicked = true;
         dots.push({x: square.x, y: square.y, whichCluster: -1});
     }
 
@@ -237,10 +251,9 @@ function kmeans()
         }
 
         iter++;
-        if (iter > 10000000)
+        if (iter > 100000)
         {
-            alert("Unable to group");
-            return;
+            break;
         }
     }
 
