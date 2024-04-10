@@ -179,15 +179,20 @@ function findGeometricalCenter(dots, clusterIndex)
 // Алгоритм к-средних для разделения на кластеры
 function kmeans()
 {
-    let dotsPrev = [];
+    var startTime = new Date();
+    var endTime = new Date();
+
+    let dotsBest = [];
     for (let i = 0; i < dots.length; i++)
     {
-        dotsPrev.push(dots[i].whichCluster);
+        dotsBest.push({x: dots[i].x, y: dots[i].y, whichCluster: dots[i].whichCluster});
     }
+
+    let qualityBest = 0;
 
     let clusterCentersPrev = [];
 
-    let iter = 1;
+    var firstIter = false;
 
     while (true)
     {
@@ -199,7 +204,8 @@ function kmeans()
             return;
         }
 
-        let cnt = 0;
+        let quality = 0;
+
         for (let i = 0; i < dots.length; i++)
         {
             let minCluster = {clusterIndex: -1, length: Number.MAX_SAFE_INTEGER};
@@ -213,46 +219,53 @@ function kmeans()
             }
             
             dots[i].whichCluster = minCluster.clusterIndex;
-            if (dots[i].whichCluster === dotsPrev[i])
-            {
-                cnt++;
-            }
 
             clusterCenters[minCluster.clusterIndex] = findGeometricalCenter(dots, minCluster.clusterIndex);
             clusterCenters[minCluster.clusterIndex].used = true;
         }
 
-        for (let i = 0; i < clusterCenters.length && iter > 1; i++)
+        for (let i = 0; i < clusterCenters.length && firstIter === true; i++)
         {
-            if (clusterCenters[i].x === clusterCentersPrev[i].x && clusterCenters[i].y === clusterCentersPrev[i].y && clusterCenters[i].used === true)
+            if (clusterCenters[i].x === clusterCentersPrev[i].x && clusterCenters[i].y === clusterCentersPrev[i].y)
             {
-                cnt++;
+                quality++;
+            }
+            if (clusterCenters[i].used === true)
+            {
+                quality++;
             }
         }
 
-        if (cnt === dots.length + clusterCenters.length)
+        if (quality === clusterCenters.length * 2)
         {
-            console.log(iter);
             break;
         }
         else
         {
-            dotsPrev = [];
-            for (let i = 0; i < dots.length; i++)
-            {
-                dotsPrev.push(dots[i].whichCluster);
-            }
-
             clusterCentersPrev = [];
             for (let i = 0; i < clusterCenters.length; i++)
             {
                 clusterCentersPrev.push({x: clusterCenters[i].x, y: clusterCenters[i].y});
             }
+
+            if (quality > qualityBest)
+            {
+                qualityBest = quality;
+                dotsBest = [];
+
+                for (let i = 0; i < dots.length; i++)
+                {
+                    dotsBest.push({x: dots[i].x, y: dots[i].y, whichCluster: dots[i].whichCluster});
+                }
+            }
         }
 
-        iter++;
-        if (iter > 100000)
+        endTime = new Date();
+        firstIter = true;
+
+        if (endTime - startTime > 5000)
         {
+            dots = dotsBest;
             break;
         }
     }
