@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ant Algorithm</title>
+
+    <script src="libs/gsap/gsap.min.js" defer></script>
+    <script src="libs/gsap/ScrollSmoother.min.js" defer></script>
+    <script src="libs/gsap/ScrollTrigger.min.js" defer></script>
+
+    <link rel="stylesheet" href="css/main.css">
+    <script src="js/app.js" defer></script>
+    <script src="js/antsJS.js" defer></script>
+
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="aura"></div>
+
+<div class="wrapper">
+    <div class="content">
+        <header class="hero-section">
+            <div class="container">
+                <div class="main-header">
+                    <h1 class="main-title">Ant algorithm</h1>
+                </div>
+            </div>
+        </header>
+        <div class="container__A*">
+            <div class="block__map">
+                <canvas id="map" class="map"></canvas>
+            </div>
+            <div class="menu">
+                <div id="pathDistance">
+                    <h4>Distance: 0</h4>
+                </div>
+                <div class="menu__block">
+                    <button id="start" class="complete_btn">
+                        <h1>Start</h1>
+                    </button>
+                </div>
+                <div class="menu__block">
+                    <button id="resetMap" class="complete_btn">
+                        <h1>Reset map</h1>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
