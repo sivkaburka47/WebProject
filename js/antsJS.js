@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 let counter = 1;
 let circles = [];
 let edges = [];
+let stop = false;
 
 canvas.width = canvas.offsetWidth;
 canvas.height = canvas.offsetHeight;
@@ -10,11 +11,14 @@ canvas.height = canvas.offsetHeight;
 document.addEventListener("DOMContentLoaded", function() {
     canvas.addEventListener("click", handleClick);
     document.getElementById("start").addEventListener("click", antsAlgo);
-
-    document.getElementById('resetMap').addEventListener('click', function() {
-        resetCanvas();
-    });
+    document.getElementById("stop").addEventListener("click", stopAlgo);
+    document.getElementById('resetMap').addEventListener('click', resetCanvas);
 });
+
+function stopAlgo()
+{
+    stop = true;
+}
 
 // Нажатие
 function handleClick(e) {
@@ -98,26 +102,32 @@ function resetCanvas() {
 }
 
 let path = [];
+let pathBest = [];
+let bestDist = Number.MAX_SAFE_INTEGER;
 let edgesNew = [];
 let visited = [];
-let stop = false;
 let alpha = 1;
 let beta = 1;
 let p = 0.36;
 let q = 4;
 
+// Муравьиный алгоритм
 function antsAlgo()
 {
-    let iter = 1;
-    
+    stop = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawCircles();
+    drawLines();
+
     edgesNew = [];
+    pathBest = [];
+    bestDist = Number.MAX_SAFE_INTEGER;
     for (let i = 0; i < edges.length; i++)
     {
         edgesNew.push({from: edges[i].from, to: edges[i].to, distance: 200 / edges[i].distance, pheromone: 0.2})
     }
 
-    while (!stop)
-    {
+    function algo(){   
         path = [];
         for (let m = 0; m < circles.length; m++)
         {
@@ -132,21 +142,140 @@ function antsAlgo()
         }
 
         updatePheromone();
-        iter++;
+        
+        displayPheromone();
 
-        if (iter === 1000)
+        findBestPath();
+        document.getElementById('pathDistance').innerText = `Distance: ${bestDist.toFixed(2)}`;
+
+
+        if (stop)
         {
-            ctx.beginPath();
-            ctx.moveTo(circles[path[0][0].from].x, circles[path[0][0].from].y);
-            for (let i = 0; i < path.length; i++) {
-                ctx.lineTo(circles[path[0][i].from].x, circles[path[0][i].from].y);
-            }
-            ctx.lineTo(circles[path[0][0].from].x, circles[path[0][0].from].y);
-            ctx.strokeStyle = 'rgb(255, 0, 0)';
-            ctx.stroke();
-            break;
+            displayBestPath();
+            return;
+        }
+
+        requestAnimationFrame(algo);
+    }
+    algo();
+}
+
+// Отображение лучшего пути
+function displayBestPath()
+{
+    document.getElementById('pathDistance').innerText = `Distance: ${bestDist.toFixed(2)}`;
+
+    pathBest.forEach(edge => {
+        ctx.beginPath();
+
+        ctx.moveTo(circles[edge.from].x, circles[edge.from].y);
+        ctx.lineTo(circles[edge.to].x, circles[edge.to].y);
+        
+        ctx.moveTo(circles[edge.from].x + 1, circles[edge.from].y + 1);
+        ctx.lineTo(circles[edge.to].x + 1, circles[edge.to].y + 1);
+
+        ctx.moveTo(circles[edge.from].x - 1, circles[edge.from].y - 1);
+        ctx.lineTo(circles[edge.to].x - 1, circles[edge.to].y - 1);
+
+        ctx.strokeStyle = 'rgb(255, 0, 0)';
+        ctx.stroke();
+    });
+}
+
+// Нахождение лучшего пути
+function findBestPath()
+{
+    for (let m = 0; m < circles.length; m++)
+    {
+        let pathDist = 0;
+        for (let i = 0; i < path[m].length; i++)
+        {
+            pathDist += path[m][i].distance;
+        }
+
+        if (pathDist < bestDist)
+        {
+            bestDist = pathDist;
+            pathBest = path[m];
         }
     }
+}
+
+ // Перекрашивание графа в соответвствии с количестом феромонов на ребрах
+function displayPheromone()
+{
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    let biggestPheromone = findBiggestPheromone();
+
+    edgesNew.forEach(edge => {
+        ctx.beginPath();
+
+        ctx.moveTo(circles[edge.from].x, circles[edge.from].y);
+        ctx.lineTo(circles[edge.to].x, circles[edge.to].y);
+            
+        if (edge.pheromone < biggestPheromone * 0.1)
+        {
+            ctx.strokeStyle = 'rgba(0, 0, 255, 0.1)';
+        }
+        else if (edge.pheromone < biggestPheromone * 0.3)
+        {
+            ctx.strokeStyle = 'rgba(0, 0, 255, 0.3)';
+        }
+        else if (edge.pheromone < biggestPheromone * 0.4)
+        {
+            ctx.strokeStyle = 'rgba(0, 0, 255, 0.4)';
+        }
+        else if (edge.pheromone < biggestPheromone * 0.5)
+        {
+            ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)';
+        }
+        else if (edge.pheromone < biggestPheromone * 0.6)
+        {
+            ctx.strokeStyle = 'rgba(0, 0, 255, 0.7)';
+        }
+        else if (edge.pheromone < biggestPheromone * 0.7)
+        {
+            ctx.moveTo(circles[edge.from].x + 1, circles[edge.from].y + 1);
+            ctx.lineTo(circles[edge.to].x + 1, circles[edge.to].y + 1);
+
+            ctx.strokeStyle = 'rgba(0, 0, 255, 0.7)';
+        }
+        else if (edge.pheromone < biggestPheromone * 0.9)
+        {
+            ctx.moveTo(circles[edge.from].x + 1, circles[edge.from].y + 1);
+            ctx.lineTo(circles[edge.to].x + 1, circles[edge.to].y + 1);
+
+            ctx.strokeStyle = 'rgba(0, 0, 255, 0.85)';
+        }
+        else
+        {
+            ctx.moveTo(circles[edge.from].x + 1, circles[edge.from].y + 1);
+            ctx.lineTo(circles[edge.to].x + 1, circles[edge.to].y + 1);
+
+            ctx.moveTo(circles[edge.from].x - 1, circles[edge.from].y - 1);
+            ctx.lineTo(circles[edge.to].x - 1, circles[edge.to].y - 1);
+
+            ctx.strokeStyle = 'rgba(0, 0, 255, 1)';
+        }
+
+        ctx.stroke();
+    });
+}
+
+// Нахождение наибольшего количество феромонов
+function findBiggestPheromone()
+{
+    let biggestPheromone = 0;
+
+    edgesNew.forEach(edge => {
+        if (edge.pheromone > biggestPheromone)
+        {
+            biggestPheromone = edge.pheromone;
+        }
+    });
+
+    return biggestPheromone;
 }
 
 // Обновление феромонов
@@ -178,24 +307,9 @@ function updatePheromone()
             }
         }
     }
-
-    // Перекрашивание графа в соответвствии с количестом феромонов на ребрах
-    edgesNew.forEach(function(edge) {
-        ctx.beginPath();
-        ctx.moveTo(circles[edge.from].x, circles[edge.from].y);
-        ctx.lineTo(circles[edge.to].x, circles[edge.to].y);
-
-        ctx.moveTo(circles[edge.from].x + 1, circles[edge.from].y + 1);
-        ctx.lineTo(circles[edge.to].x + 1, circles[edge.to].y + 1);
-
-        ctx.moveTo(circles[edge.from].x - 1, circles[edge.from].y - 1);
-        ctx.lineTo(circles[edge.to].x - 1, circles[edge.to].y - 1);
-
-        ctx.strokeStyle = 'rgba(0, 0, 255, ' + 0.5 * edge.pheromone + ')';
-        ctx.stroke();
-    });
 }
 
+// Нахождение путь
 function findPath(curPoint, startPoint)
 {
     for (let i = 0; i < circles.length; i++)
