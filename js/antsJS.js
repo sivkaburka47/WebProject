@@ -46,8 +46,7 @@ function recalculateEdges() {
             edges.push({
                 from: i,
                 to: j,
-                distance: distance,
-                pheromone: 0.2
+                distance: distance
             });
         }
         }
@@ -101,6 +100,32 @@ function resetCanvas() {
     document.getElementById('pathDistance').innerText = 'Distance: 0';
 }
 
+// Задаем значение Альфа
+var alphaInput = document.querySelector('.input_alpha');
+alphaInput.addEventListener('blur', function() {
+    let val = parseInt(alphaInput.value, 10);
+    if (val < 0.1) {
+        alphaInput.value = 0.1;
+    }
+    else if (val > 100)
+    {
+        alphaInput.value = 100;
+    }
+});
+
+// Задаем значение Бета
+var betaInput = document.querySelector('.input_beta');
+betaInput.addEventListener('blur', function() {
+    let val = parseInt(betaInput.value, 10);
+    if (val < 0.1) {
+        betaInput.value = 0.1;
+    }
+    else if (val > 100)
+    {
+        betaInput.value = 100;
+    }
+});
+
 let path = [];
 let pathBest = [];
 let bestDist = Number.MAX_SAFE_INTEGER;
@@ -128,6 +153,8 @@ function antsAlgo()
     }
 
     function algo(){   
+        alpha = parseInt(document.querySelector(".input_alpha").value) || 1;
+        beta = parseInt(document.querySelector(".input_beta").value) || 1;
         path = [];
         for (let m = 0; m < circles.length; m++)
         {
@@ -143,7 +170,10 @@ function antsAlgo()
 
         updatePheromone();
         
-        displayPheromone();
+        if (circles.length > 1)
+        {
+            displayPheromone();
+        }
 
         findBestPath();
         document.getElementById('pathDistance').innerText = `Distance: ${bestDist.toFixed(2)}`;
@@ -340,6 +370,8 @@ function findDist(point1, point2)
             return edges[i].distance;
         }
     }
+
+    return 0;
 }
 
 // Расчитываем вероятность того, что муравей пойдет в определенную вершину

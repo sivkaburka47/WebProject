@@ -226,7 +226,7 @@ body {
     border: solid 1px dimgrey;
 
 }
-.input_size_map_num{
+.input_size_map_num, .input_alpha, .input_beta{
     background-color: whitesmoke;
     width: 20vh;
     height: 5vh;
