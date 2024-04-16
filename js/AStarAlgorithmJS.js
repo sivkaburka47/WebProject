@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function() {
     const canvas = document.getElementById("map");
     document.getElementById("resetMap").addEventListener("click", function() {
@@ -6,10 +7,49 @@ document.addEventListener("DOMContentLoaded", function() {
         pathFound = false;
     });
     document.getElementById("findPath").addEventListener("click", findPath);
-    canvas.addEventListener("click", handleClick);
+    canvas.addEventListener("mousedown", handleMouseDown);
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mouseup", handleMouseUp);
     canvas.addEventListener("dblclick", handleDoubleClick);
-
 });
+
+let isDrawing = false;
+let lastSquare = null;
+
+function handleMouseDown(event) {
+    const square = getSquare(event);
+    if (!square) return;
+
+    isDrawing = true;
+    lastSquare = square;
+    toggleSquareState(square);
+    drawSquares();
+}
+
+function handleMouseMove(event) {
+    if (!isDrawing) return;
+
+    const square = getSquare(event);
+    if (!square || square === lastSquare) return;
+
+    lastSquare = square;
+    toggleSquareState(square);
+    drawSquares();
+}
+
+function handleMouseUp(event) {
+    isDrawing = false;
+    lastSquare = null;
+}
+
+function toggleSquareState(square) {
+    if (!square.clicked && !square.doubleClicked) {
+        square.clicked = true;
+    } else if (square.clicked) {
+        square.clicked = false;
+    }
+}
+
 
 var rangeInput = document.querySelector('.input_size_map');
 var numberInput = document.querySelector('.input_size_map_num');
@@ -156,29 +196,29 @@ function drawMap() {
     drawSquares();
 }
 
-function handleClick(event) {
-    if (pathFound) return;
-
-    const square = getSquare(event);
-    if (!square) return;
-
-    if (++square.clickCount === 3) {
-        square.clicked = false;
-        square.doubleClicked = false;
-        square.clickCount = 0;
-
-        highlightedSquares = highlightedSquares.filter(s => s !== square);
-    } else {
-        square.clicked = !square.clicked;
-
-        if (square.doubleClicked) {
-            square.doubleClicked = false;
-            highlightedSquares = highlightedSquares.filter(s => s !== square);
-        }
-    }
-
-    drawSquares();
-}
+// function handleClick(event) {
+//     if (pathFound) return;
+//
+//     const square = getSquare(event);
+//     if (!square) return;
+//
+//     if (++square.clickCount === 3) {
+//         square.clicked = false;
+//         square.doubleClicked = false;
+//         square.clickCount = 0;
+//
+//         highlightedSquares = highlightedSquares.filter(s => s !== square);
+//     } else {
+//         square.clicked = !square.clicked;
+//
+//         if (square.doubleClicked) {
+//             square.doubleClicked = false;
+//             highlightedSquares = highlightedSquares.filter(s => s !== square);
+//         }
+//     }
+//
+//     drawSquares();
+// }
 
 function handleDoubleClick(event) {
     if (pathFound) return;
@@ -215,7 +255,11 @@ function drawSquares() {
         if (square.path) {
             ctx.fillStyle = 'rgb(178, 201, 171)';
         } else if (square.doubleClicked) {
-            ctx.fillStyle = 'rgb(231, 187, 65)';
+            if (square === highlightedSquares[0]) {
+                ctx.fillStyle = 'rgb(255,211,107)';
+            } else if (square === highlightedSquares[1]) {
+                ctx.fillStyle = 'rgb(255,188,0)';
+            }
         } else if (square.clicked) {
             ctx.fillStyle = 'rgb(107, 113, 126)';
         } else {
