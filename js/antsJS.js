@@ -244,50 +244,7 @@ function displayPheromone()
         ctx.moveTo(circles[edge.from].x, circles[edge.from].y);
         ctx.lineTo(circles[edge.to].x, circles[edge.to].y);
             
-        if (edge.pheromone < biggestPheromone * 0.1)
-        {
-            ctx.strokeStyle = 'rgba(0, 0, 255, 0.1)';
-        }
-        else if (edge.pheromone < biggestPheromone * 0.3)
-        {
-            ctx.strokeStyle = 'rgba(0, 0, 255, 0.3)';
-        }
-        else if (edge.pheromone < biggestPheromone * 0.4)
-        {
-            ctx.strokeStyle = 'rgba(0, 0, 255, 0.4)';
-        }
-        else if (edge.pheromone < biggestPheromone * 0.5)
-        {
-            ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)';
-        }
-        else if (edge.pheromone < biggestPheromone * 0.6)
-        {
-            ctx.strokeStyle = 'rgba(0, 0, 255, 0.7)';
-        }
-        else if (edge.pheromone < biggestPheromone * 0.7)
-        {
-            ctx.moveTo(circles[edge.from].x + 1, circles[edge.from].y + 1);
-            ctx.lineTo(circles[edge.to].x + 1, circles[edge.to].y + 1);
-
-            ctx.strokeStyle = 'rgba(0, 0, 255, 0.7)';
-        }
-        else if (edge.pheromone < biggestPheromone * 0.9)
-        {
-            ctx.moveTo(circles[edge.from].x + 1, circles[edge.from].y + 1);
-            ctx.lineTo(circles[edge.to].x + 1, circles[edge.to].y + 1);
-
-            ctx.strokeStyle = 'rgba(0, 0, 255, 0.85)';
-        }
-        else
-        {
-            ctx.moveTo(circles[edge.from].x + 1, circles[edge.from].y + 1);
-            ctx.lineTo(circles[edge.to].x + 1, circles[edge.to].y + 1);
-
-            ctx.moveTo(circles[edge.from].x - 1, circles[edge.from].y - 1);
-            ctx.lineTo(circles[edge.to].x - 1, circles[edge.to].y - 1);
-
-            ctx.strokeStyle = 'rgba(0, 0, 255, 1)';
-        }
+        ctx.strokeStyle = 'rgba(0, 0, 255, ' + (edge.pheromone / biggestPheromone) + ')';
 
         ctx.stroke();
     });
