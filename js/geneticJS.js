@@ -22,6 +22,18 @@ document.addEventListener('DOMContentLoaded', function() {
         counter++;
     });
 
+    document.getElementById('resetMap').addEventListener('click', function() {
+        circles = [];
+        edges = [];
+        counter = 1;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (document.getElementById('pathDistance')) {
+            document.getElementById('pathDistance').innerText = "Distance: 0";
+        }
+    });
+
     //Пересчет массива рёбер между кругами
     function recalculateEdges() {
         edges = [];
