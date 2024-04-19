@@ -83,6 +83,7 @@ function distance(a, b) {
     return Math.sqrt(dx * dx + dy * dy);
 }
 
+// Восстанавливаеем путь отслеживая обратно от конечного квадрата к начальному.
 function reconstructPath(current) {
     let path = [];
     while (current) {
@@ -92,6 +93,7 @@ function reconstructPath(current) {
     return path;
 }
 
+//Получение соседних квадратов для квадрата
 function getNeighbors(square, squares, countSquares) {
     const neighbors = [];
     const index = squares.indexOf(square);
@@ -113,42 +115,51 @@ function findPath() {
     const end = highlightedSquares[1];
     const countSquares = Math.sqrt(squares.length);
 
+    //узлы для рассмотрения
     let openSet = [start];
+    //узлы которые уже были рассмотрены
     let closedSet = [];
+
     start.g = 0;
     start.h = distance(start, end);
     start.f = start.h;
-
+    //оценка узлов
     while (openSet.length > 0) {
+        //выбор узла с наименьшим значением функции f
         let current = openSet.reduce((a, b) => a.f < b.f ? a : b);
 
+        //строим и отображаем путь если текущий узел является конечной точкой
         if (current === end) {
             let path = reconstructPath(current);
             drawPathStepByStep(path);
             pathFound = true;
             return;
         }
-
+        //удаляем текущий узел из открытого списка и добавляем его в закрытый список
         openSet = openSet.filter(square => square !== current);
         closedSet.push(current);
 
         const neighbors = getNeighbors(current, squares, countSquares);
         for (let i = 0; i < neighbors.length; i++) {
             const neighbor = neighbors[i];
-
+            // Пропускаем узлы которые уже рассмотрены или заблокированы
             if (closedSet.includes(neighbor) || neighbor.clicked) continue;
 
+            //расчитываем стоимость пути до соседнего узла
             const tempG = current.g + distance(current, neighbor);
 
+            //если узел еще не в открытом списке или найден более короткий путь до узла
             if (!openSet.includes(neighbor)) {
                 openSet.push(neighbor);
             } else if (tempG >= neighbor.g) {
                 continue;
             }
 
+            //обновляем значения для соседнего узла.
             neighbor.g = tempG;
             neighbor.h = distance(neighbor, end);
             neighbor.f = neighbor.g + neighbor.h;
+            //сохраненяем ссылки на текущий узел как предыдущий для соседа.
             neighbor.previous = current;
         }
     }
@@ -196,29 +207,6 @@ function drawMap() {
     drawSquares();
 }
 
-// function handleClick(event) {
-//     if (pathFound) return;
-//
-//     const square = getSquare(event);
-//     if (!square) return;
-//
-//     if (++square.clickCount === 3) {
-//         square.clicked = false;
-//         square.doubleClicked = false;
-//         square.clickCount = 0;
-//
-//         highlightedSquares = highlightedSquares.filter(s => s !== square);
-//     } else {
-//         square.clicked = !square.clicked;
-//
-//         if (square.doubleClicked) {
-//             square.doubleClicked = false;
-//             highlightedSquares = highlightedSquares.filter(s => s !== square);
-//         }
-//     }
-//
-//     drawSquares();
-// }
 
 function handleDoubleClick(event) {
     if (pathFound) return;
@@ -282,3 +270,5 @@ function getSquare(event) {
 }
 
 drawMap();
+
+
