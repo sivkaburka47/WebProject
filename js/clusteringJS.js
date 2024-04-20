@@ -6,10 +6,60 @@ document.addEventListener("DOMContentLoaded", function() {
         grouped = false;
     });
     document.getElementById("group").addEventListener("click", kmeans);
-    document.addEventListener("click", handleClick);
-    document.addEventListener("mousedown", start);
-    document.addEventListener("mouseup", stop);
+    canvas.addEventListener("mousedown", handleMouseDown);
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mouseup", handleMouseUp);
 });
+
+let isDrawing = false;
+let lastSquare = null;
+
+function handleMouseDown(event) {
+    const square = getSquare(event);
+    if (!square) return;
+
+    isDrawing = true;
+    lastSquare = square;
+    toggleSquareState(square);
+    drawSquares();
+}
+
+function handleMouseMove(event) {
+    if (!isDrawing) return;
+
+    const square = getSquare(event);
+    if (!square || square === lastSquare) return;
+
+    lastSquare = square;
+    toggleSquareState(square);
+    drawSquares();
+}
+
+function handleMouseUp(event) {
+    isDrawing = false;
+    lastSquare = null;
+}
+
+function toggleSquareState(square) {
+    if (!square.clicked && !square.doubleClicked) {
+        if (grouped) return;
+
+        const square = getSquare(event);
+        if (!square) return;
+
+        if (square.clicked === true && event.type === "click") {
+            square.clicked = false;
+            dots = dots.filter(n => n.y !== square.y || n.x !== square.x);
+        } else {
+            square.clicked = true;
+            dots.push({x: square.x, y: square.y, whichCluster: -1});
+        }
+
+        drawSquares();
+    } else if (square.clicked) {
+        square.clicked = false;
+    }
+}
 
 drawMap();
 grouped = false;
@@ -48,7 +98,7 @@ function drawMap() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     squares = [];
 
-for (let row = 0; row < countSquares; row++) {
+    for (let row = 0; row < countSquares; row++) {
         for (let col = 0; col < countSquares; col++) {
             const x = col * (squareSize + gap) + gap;
             const y = row * (squareSize + gap) + gap;
@@ -120,7 +170,7 @@ function start(event)
     document.addEventListener("mousemove", handleClick);
 }
 
-function stop() 
+function stop()
 {
     document.removeEventListener("mousemove", handleClick);
 }
@@ -217,7 +267,7 @@ function kmeans()
                     minCluster.length = Math.sqrt((clusterCenters[j].x - dots[i].x) ** 2 + (clusterCenters[j].y - dots[i].y) ** 2);
                 }
             }
-            
+
             dots[i].whichCluster = minCluster.clusterIndex;
 
             clusterCenters[minCluster.clusterIndex] = findGeometricalCenter(dots, minCluster.clusterIndex);
@@ -301,3 +351,4 @@ function kmeans()
         ctx.fillRect(dots[i].x, dots[i].y, squares[0].size, squares[0].size);
     }
 }
+

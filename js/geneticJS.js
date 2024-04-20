@@ -22,6 +22,19 @@ document.addEventListener('DOMContentLoaded', function() {
         counter++;
     });
 
+    document.getElementById('resetMap').addEventListener('click', function() {
+        circles = [];
+        edges = [];
+        counter = 1;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (document.getElementById('pathDistance')) {
+            document.getElementById('pathDistance').innerText = "Distance: 0";
+        }
+    });
+
+    //Пересчет массива рёбер между кругами
     function recalculateEdges() {
         edges = [];
 
@@ -37,10 +50,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    //Вычисление расстояния между двумя точками
     function calculateDistance(point1, point2) {
         return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
     }
 
+    //Отрисовка кругов
     function drawCircles() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -62,6 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    //Отрисовка линий
     function drawLines() {
         edges.forEach(function(edge) {
             ctx.beginPath();
@@ -72,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-
+    //Отрисовка пути
     function displayPath(path, color = 'green') {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawCircles();
@@ -88,68 +104,64 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.strokeStyle = color;
         ctx.stroke();
 
-        document.getElementById('pathDistance').innerText = `Расстояние: ${totalDistance.toFixed(2)}`;
-
+        document.getElementById('pathDistance').innerText = `Distance: ${totalDistance.toFixed(2)}`;
     }
 
-    let noBetterPathTimer;
+    document.getElementById('populationSize').addEventListener('input', function() {
+        document.getElementById('populationSizeValue').textContent = "Population: " + this.value;
+    });
 
-    function findBestPath() {
-        return new Promise(async resolve => {
-            let population = initializePopulation(2500);
-            let generations = 2500;
-            let bestDistance = Infinity;
-            let bestPath;
-
-            for (let gen = 0; gen < generations; gen++) {
-                let scores = evaluatePopulation(population);
-                let foundNewBest = false;
-
-                for (let i = 0; i < scores.length; i++) {
-                    if (scores[i] < bestDistance) {
-                        bestDistance = scores[i];
-                        bestPath = population[i];
-                        foundNewBest = true;
-                        clearTimeout(noBetterPathTimer);
-                        noBetterPathTimer = setTimeout(() => {
-                            displayPath(bestPath, 'red');
-                        }, 5000);
-                    }
-                }
-
-                if (foundNewBest) {
-                    displayPath(bestPath, 'green');
-                    await new Promise(r => setTimeout(r, 300));
-                }
-
-                let selected = select(population, scores);
-                let crossedOver = crossover(selected);
-                population = mutate(crossedOver, 0.5);
-            }
-
-            clearTimeout(noBetterPathTimer);
-            displayPath(bestPath, 'red');
-            resolve();
-        });
-    }
-
+    document.getElementById('generationsCount').addEventListener('input', function() {
+        document.getElementById('generationsCountValue').textContent = "Generations: " + this.value;
+    });
 
     document.getElementById('findPath').addEventListener('click', async function() {
         if (circles.length > 1) {
-            await findBestPath();
+            const populationSize = parseInt(document.getElementById('populationSize').value, 10);
+            const generationsCount = parseInt(document.getElementById('generationsCount').value, 10);
+            await findBestPath(populationSize, generationsCount);
         }
     });
 
+    //Поиск кратчайшего пути с использованием генетического алгоритма
+    async function findBestPath(populationSize, generations) {
+        let population = initializePopulation(populationSize);
+        let bestDistance = Infinity;
+        let bestPath;
+
+        // Цикл по поколениям для оптимизации пути
+        for (let gen = 0; gen < generations; gen++) {
+            let scores = evaluatePopulation(population);
+            for (let i = 0; i < scores.length; i++) {
+                if (scores[i] < bestDistance) {
+                    bestDistance = scores[i];
+                    bestPath = [...population[i]];
+
+                    displayPath(bestPath, 'green');
+                    await new Promise(r => setTimeout(r, 100));
+                }
+            }
+
+            population = selectNextGeneration(population, scores);
+            population = crossoverPopulation(population);
+            population = mutatePopulation(population, gen, generations);
+        }
+        displayPath(bestPath, 'red');
+    }
+
+    // Инициализация начальной популяции
     function initializePopulation(populationSize) {
         let population = [];
         for (let i = 0; i < populationSize; i++) {
-            let individual = Array.from({length: circles.length}, (v, k) => k);
-            shuffleArray(individual);
-            population.push(individual);
+            // Генерируем случайного пути
+            let path = [...Array(circles.length).keys()];
+            shuffleArray(path);
+            population.push(path);
         }
         return population;
     }
 
+    //Перемешивание массива
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -157,88 +169,81 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    //Оценка популяции
     function evaluatePopulation(population) {
-        return population.map(path => {
-            let distance = 0;
-            for (let i = 0; i < path.length - 1; i++) {
-                distance += calculateDistance(circles[path[i]], circles[path[i + 1]]);
-            }
-            distance += calculateDistance(circles[path[0]], circles[path[path.length - 1]]);
-            return distance;
-        });
+        return population.map(path => pathDistance(path));
     }
 
-    function select(population, scores) {
-        let matingPool = [];
-        let maxScore = Math.max(...scores);
-        for (let i = 0; i < population.length; i++) {
-            let fitness = 1 - (scores[i] / maxScore);
-            let n = Math.floor(fitness * 100);
-            for (let j = 0; j < n; j++) {
-                matingPool.push(population[i]);
-            }
+    //Вычисление общего расстояния пути
+    function pathDistance(path) {
+        let total = 0;
+        // Расстояние между последовательными точками в пути
+        for (let i = 0; i < path.length - 1; i++) {
+            total += calculateDistance(circles[path[i]], circles[path[i + 1]]);
         }
-        return matingPool;
+        //Замыкаем путь
+        total += calculateDistance(circles[path[path.length - 1]], circles[path[0]]);
+        return total;
     }
 
-    function crossover(matingPool) {
+    // Функция для выбора следующего поколения на основе оценок
+    function selectNextGeneration(population, scores) {
+        // Сортировка индексов на основе оценок расстояний
+        let sortedIndices = scores.map((score, index) => [score, index])
+            .sort((a, b) => a[0] - b[0])
+            .map(pair => pair[1]);
+        // Отбор лучших для следующего поколения
+        return sortedIndices.slice(0, population.length).map(index => population[index]);
+    }
+
+    // Скрещивания популяции и создание нового поколения
+    function crossoverPopulation(population) {
         let newPopulation = [];
-        for (let i = 0; i < matingPool.length; i += 2) {
-            if (i + 1 < matingPool.length) {
-                let parent1 = matingPool[i];
-                let parent2 = matingPool[i + 1];
-                let [child1, child2] = orderedCrossover(parent1, parent2);
-                newPopulation.push(child1, child2);
-            }
+        for (let i = 0; i < population.length; i += 2) {
+            let parent1 = population[i];
+            let parent2 = population[i + 1] || population[i]; // на случай нечетного количества
+            let [child1, child2] = singlePointCrossover(parent1, parent2);
+            newPopulation.push(child1, child2);
         }
         return newPopulation;
     }
 
-    function orderedCrossover(parent1, parent2) {
-        let start = Math.floor(Math.random() * parent1.length);
-        let end = Math.floor(Math.random() * (parent1.length - start)) + start;
-        let child1 = fillChild(start, end, parent1, parent2);
-        let child2 = fillChild(start, end, parent2, parent1);
+    // Функция для скрещивания двух родителей с одной точкой разреза
+    function singlePointCrossover(parent1, parent2) {
+        let point = Math.floor(Math.random() * parent1.length);
+        let child1 = createChild(parent1, parent2, point);
+        let child2 = createChild(parent2, parent1, point);
         return [child1, child2];
     }
 
-    function fillChild(start, end, parent1, parent2) {
-        let child = new Array(parent1.length).fill(null);
-        for (let i = start; i < end; i++) {
-            child[i] = parent1[i];
-        }
-        parent2.forEach(item => {
-            if (!child.includes(item)) {
-                let index = child.indexOf(null);
-                child[index] = item;
+    //Создания потомка используя гены двух родителей до заданной точки разреза
+    function createChild(parent1, parent2, crossoverPoint) {
+        let child = [];
+        // Инициализируем набор элементов из parent1 до точки разреза
+        let elements = new Set(parent1.slice(0, crossoverPoint));
+        //Добавляем их в потомка
+        child.push(...parent1.slice(0, crossoverPoint));
+
+        //Добавляем элементы из parent2 которых еще нету в потомке
+        parent2.forEach(element => {
+            if (!elements.has(element)) {
+                child.push(element);
             }
         });
+
         return child;
     }
 
-    function mutate(population, mutationRate) {
-        let mutatedPopulation = population.map(individual => {
+    //Мутация популяции
+    function mutatePopulation(population) {
+        const mutationRate = 0.5;
+        population.forEach(path => {
             if (Math.random() < mutationRate) {
-                let index1 = Math.floor(Math.random() * individual.length);
-                let index2 = (index1 + 1) % individual.length;
-                [individual[index1], individual[index2]] = [individual[index2], individual[index1]];
+                const index1 = Math.floor(Math.random() * path.length);
+                const index2 = (index1 + 1) % path.length;
+                [path[index1], path[index2]] = [path[index2], path[index1]];
             }
-            return individual;
         });
-        return mutatedPopulation;
+        return population;
     }
-
-    function resetCanvas() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        circles = [];
-        edges = [];
-        counter = 1;
-        document.getElementById('pathDistance').innerText = 'Расстояние: 0';
-    }
-
-    document.getElementById('resetMap').addEventListener('click', function() {
-        resetCanvas();
-    });
-
-
 });
