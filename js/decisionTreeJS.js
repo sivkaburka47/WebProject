@@ -3,6 +3,8 @@ canvas.width = canvas.offsetWidth;
 canvas.height = canvas.offsetHeight;
 const ctx = canvas.getContext('2d');
 
+let parent;
+
 // Реализация дерева
 class TreeNode {
     constructor(value, question) {
@@ -16,31 +18,23 @@ function findParent(start, parentVal)
 {
     if (start.value === parentVal)
     {
-        return start;
+        parent = start;
     }
     else
     {
         for (let i = 0; i < start.children.length; i++)
         {
-            return findParent(start.children[i], parentVal);
+            findParent(start.children[i], parentVal);
         }
     }
 }
 
 function insert(parentVal, value, question, tree) 
 {
-    let node = findParent(tree, parentVal);
+    findParent(tree, parentVal);
     let child = new TreeNode(value, question);
 
-    if (typeof child.value === "string")
-    {
-        let div = document.createElement(child.value);
-        document.body.append(div);
-    }
-
-    node.children.push(child);
-
-    return node;
+    parent.children.push(child);
 }
 
 let data = [];
@@ -180,6 +174,7 @@ function drawPath(tree, parentCoordX, parentCoordY, siblingsQuantity, siblingNum
 }
 
 let path = [];
+let used = [];
 
 function startAlgo()
 {
@@ -195,15 +190,26 @@ function solve(tree, request, part)
         return;
     }
 
-    while (request[part].name !== tree.value)
+    if (part >= request.length)
+    {
+        part = 0;
+    }
+
+    while (request[part].name !== tree.value || used[part] === true)
     {
         part++;
+        
+        if (part >= request.length)
+        {
+            part = 0;
+        }
     }
 
     for (let i = 0; i < tree.children.length; i++)
     {
         if (tree.children[i].question === request[part].question)
         {
+            used[part] = true;
             path.push(tree.children[i].question);
             solve(tree.children[i], request, part + 1);
         }
@@ -256,7 +262,7 @@ function makeTreeStart(data)
 
 function makeTreeContinue(tree, data, parentValue)
 {
-    let parent = findParent(tree, parentValue);
+    findParent(tree, parentValue);
     let column = findBiggeestGainRatio(calcRatio(data));
     parent.value = data[column].name;
     let questions = findQuestions(data, column);
